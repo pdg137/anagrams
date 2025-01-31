@@ -3,6 +3,9 @@
 import "jquery"
 import {Hello} from "test/hello"
 
+// make accessible in console
+window.Hello = Hello
+
 $(function() {
     let h = new Hello()
     h.hello()
