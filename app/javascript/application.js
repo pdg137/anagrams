@@ -2,11 +2,7 @@
 
 import "jquery"
 import {Hello} from "test/hello"
+import "channels"
 
 // make accessible in console
 window.Hello = Hello
-
-$(function() {
-    let h = new Hello()
-    h.hello()
-})
