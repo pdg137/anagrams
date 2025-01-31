@@ -1,11 +1,14 @@
 import * as Channels from "channels"
 
-Channels.chat.setListener(function(data) {
+const room = $("#chat").data("room")
+const chat_channel = new Channels.ChatChannel(room)
+
+chat_channel.setListener(function(data) {
     $("#chat_output").append(data+"\r\n")
 })
 
 function say_click() {
-    if(!Channels.chat.say($("#chat_input").val()))
+    if(!chat_channel.say($("#chat_input").val()))
     {
         alert("failed to send message")
         return
