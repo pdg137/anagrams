@@ -12,3 +12,7 @@
 <textarea id="chat_output" style="width: 500px; height: 200px;"></textarea><br>
 <input type="text" id="chat_input" style="width: 400px;">
 <button id="chat_say">Say</button>
+
+<% content_for :head do %>
+<%= javascript_import_module_tag "game/chat" %>
+<% end %>
