@@ -18,11 +18,11 @@ RSpec.describe "/games", type: :request do
   # Game. As you add validations to Game, be sure to
   # adjust the attributes here as well.
   let(:valid_attributes) {
-    skip("Add a hash of attributes valid for your model")
+    { }
   }
 
   let(:invalid_attributes) {
-    skip("Add a hash of attributes invalid for your model")
+    { name: "hello" }
   }
 
   describe "GET /index" do
@@ -87,7 +87,7 @@ RSpec.describe "/games", type: :request do
   describe "PATCH /update" do
     context "with valid parameters" do
       let(:new_attributes) {
-        skip("Add a hash of attributes valid for your model")
+        { }
       }
 
       it "updates the requested game" do
