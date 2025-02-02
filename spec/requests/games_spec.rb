@@ -94,7 +94,7 @@ RSpec.describe "/games", type: :request do
         game = Game.create! valid_attributes
         patch game_url(game), params: { game: new_attributes }
         game.reload
-        skip("Add assertions for updated state")
+        #skip("Add assertions for updated state")
       end
 
       it "redirects to the game" do
