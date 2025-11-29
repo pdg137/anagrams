@@ -2,11 +2,11 @@ let
   # Change to this if you want to use your configured channel
   #  nixpkgs = <nixpkgs>;
 
-  # nixos-24.11 from 2024-12-29:
+  # nixos-25.05 from 2025-05-29:
   nixpkgs = fetchTarball {
     name = "nixpkgs";
-    url = "https://github.com/NixOS/nixpkgs/archive/d49da4c0.tar.gz";
-    sha256 = "02g0ivn1nd8kpzrfc4lpzjbrcixi3p8iysshnrdy46pnwnjmf1rj";
+    url = "https://github.com/NixOS/nixpkgs/archive/7c815e5.tar.gz";
+    sha256 = "0nysdk5i3arc88k5ibx3rgl0ihd7km52hr61l8qx280nf7sjf6zm";
   };
 
   pkgs = import nixpkgs {};
@@ -40,6 +40,7 @@ in
       pkgs.fontconfig
       pkgs.sqlite
       pkgs.which
+      pkgs.codex
     ];
 
     # prevent nixpkgs from being garbage-collected
