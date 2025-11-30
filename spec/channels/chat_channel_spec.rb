@@ -49,7 +49,6 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
   it 'shows the current board state for /look' do
     allow(game).to receive(:visible_letters).and_return(%w[H I J])
     allow(game).to receive(:words).and_return({ 'Alice' => ['HOUSE', 'RIVER'], 'Bob' => ['CLOUD'], 'Charlie' => [] })
-    allow(Game).to receive(:find_by).and_call_original
     allow(Game).to receive(:find_by).with(id: game.id).and_return(game)
 
     subscribe room: room
@@ -129,7 +128,6 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
     allow(game).to receive(:flip).with('Someone').and_return('Z')
     allow(game).to receive(:visible_letters).and_return(%w[Z])
     allow(game).to receive(:words).and_return({})
-    allow(Game).to receive(:find_by).and_call_original
     allow(Game).to receive(:find_by).with(id: game.id).and_return(game)
 
     subscribe room: room
@@ -140,6 +138,22 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
     }.to have_broadcasted_to(room).with(
       chat: 'Someone flipped Z',
       status: "Visible letters: Z\nNo words have been played yet."
+    )
+  end
+
+  it 'includes a status update when a player forms a word' do
+    allow(Game).to receive(:find_by).with(id: game.id).and_return(game)
+    allow(game).to receive(:try_steal).with('Someone', 'CAT').and_return(true)
+    allow(game).to receive(:visible_letters).and_return(%w[R])
+    allow(game).to receive(:words).and_return({ 'Someone' => ['CAT'] })
+
+    subscribe room: room
+
+    expect {
+      perform :say, message: 'cat'
+    }.to have_broadcasted_to(room).with(
+      chat: 'Someone made CAT',
+      status: "Visible letters: R\nSomeone: CAT"
     )
   end
 end
