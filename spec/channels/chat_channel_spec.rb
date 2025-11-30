@@ -4,6 +4,7 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
   self._connection_class = ApplicationCable::Connection
 
   let(:websocket) { instance_double(ActionCable::Connection::WebSocket, transmit: nil) }
+  let(:game) { Game.create!(log: "") }
 
   before do
     connect
@@ -12,7 +13,7 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
     connection.instance_variable_set(:@websocket, websocket)
   end
 
-  let(:room) { 'room1' }
+  let(:room) { "game-#{game.id}" }
 
   it 'streams from the room and broadcasts a connect message' do
     expect {
@@ -43,5 +44,26 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
     expect {
       perform :say, message: 'Hi there'
     }.to have_broadcasted_to(room).with('Alice said: Hi there')
+  end
+
+  it 'shows the current board state for /look' do
+    allow(game).to receive(:visible_letters).and_return(%w[H I J])
+    allow(game).to receive(:words).and_return({ 1 => ['HOUSE', 'RIVER'], 2 => ['CLOUD'], 3 => [] })
+    allow(Game).to receive(:find_by).and_call_original
+    allow(Game).to receive(:find_by).with(id: game.id).and_return(game)
+
+    subscribe room: room
+    allow(subscription.connection).to receive(:transmit)
+
+    perform :say, message: '/look'
+
+    expect(subscription.connection).to have_received(:transmit).with(
+      identifier: subscription.instance_variable_get(:@identifier),
+      message: <<~END
+        Visible letters: H I J
+        Player 1: HOUSE RIVER
+        Player 2: CLOUD
+      END
+    )
   end
 end

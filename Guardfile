@@ -8,6 +8,7 @@ guard :rspec, cmd: 'rspec', failed_mode: :keep,
 
   watch(%r{^routes.rb})
   watch(%r{^app/.+.rb$})
+  watch(%r{^app/channels/(.+)\.rb$}) { |m| "spec/channels/#{m[1]}_spec.rb" }
   watch(%r{^lib/.+.rb$})
   watch(%r{^.+.js$})
 
