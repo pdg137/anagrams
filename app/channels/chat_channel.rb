@@ -54,10 +54,12 @@ class ChatChannel < ApplicationCable::Channel
   end
 
   def game
-    return @game if defined?(@game)
+    @game ||= find_game
+  end
 
-    match = params[:room].to_s.match(/^game-(\d+)$/)
-    @game = match ? Game.find_by(id: match[1].to_i) : nil
+  def find_game
+    params[:room] =~ /^game-(\d+)$/
+    Game.find_by(id: $1.to_i)
   end
 
   def handle_command(command_line)
@@ -77,7 +79,7 @@ class ChatChannel < ApplicationCable::Channel
   end
 
   def normalize_command(name)
-    case name&.downcase
+    case name.downcase
     when 'nick', 'n'
       :nick
     when 'look', 'l'
@@ -98,23 +100,12 @@ class ChatChannel < ApplicationCable::Channel
   end
 
   def handle_look_command
-    if game
-      connection.transmit identifier: @identifier, message: look_state
-    else
-      transmit_error('No active game.')
-    end
+    connection.transmit identifier: @identifier, message: look_state
   end
 
   def handle_flip_command
-    unless game
-      transmit_error('No active game.')
-      return
-    end
-
     letter = game.flip(nickname)
     broadcast "#{nickname} flipped #{letter}"
-  rescue LogError => e
-    transmit_error(e.message)
   end
 
   def transmit_error(message)
