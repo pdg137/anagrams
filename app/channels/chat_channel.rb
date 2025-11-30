@@ -9,14 +9,15 @@ class ChatChannel < ApplicationCable::Channel
   end
 
   def say(data)
-    message = data['message']
-    if message =~ %r(^/nick\s+(.*))
-      broadcast "#{nickname} set nickname to #{$1}"
-      connection.nickname = $1
+    message = data['message'].to_s
+    if (match = message.match(%r{\A/nick\s+(\w+)\z}))
+      new_nickname = match[1]
+      broadcast "#{nickname} set nickname to #{new_nickname}"
+      connection.nickname = new_nickname
       return
     end
 
-    if message.to_s.strip == '/look'
+    if message.strip == '/look'
       connection.transmit identifier: @identifier, message: look_state
       return
     end

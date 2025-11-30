@@ -39,8 +39,8 @@ RSpec.describe Game, type: :model do
   context 'flipped "A" and "C"' do
     let(:log) { <<END }
 ABCD
-1+A
-1+C
+Alice+A
+Alice+C
 END
 
     it 'shows the remaining letters' do
@@ -52,7 +52,7 @@ END
   context 'flipped non-existent letter' do
     let(:log) { <<END }
 ABCD
-1+Z
+Alice+Z
 END
 
     specify do
@@ -63,14 +63,14 @@ END
   context 'make CAB' do
     let(:log) { <<END }
 ABCD
-1+A
-2+B
-3+C
-1:CAB
+Alice+A
+Bob+B
+Carol+C
+Alice:CAB
 END
 
     specify do
-      expect(subject.words[1]).to eq %w(CAB)
+      expect(subject.words['Alice']).to eq %w(CAB)
       expect(subject.visible_letters).to eq []
     end
   end
@@ -78,10 +78,10 @@ END
   context 'make CABA' do
     let(:log) { <<END }
 ABCD
-1+A
-2+B
-3+C
-1:CABA
+Alice+A
+Bob+B
+Carol+C
+Alice:CABA
 END
 
     specify do
@@ -92,17 +92,17 @@ END
   context 'make CAB then ABCD' do
     let(:log) { <<END }
 ABCD
-1+A
-2+B
-3+C
-1:CAB
-1+D
-2:ABCD
+Alice+A
+Bob+B
+Carol+C
+Alice:CAB
+Alice+D
+Bob:ABCD
 END
 
     specify do
-      expect(subject.words[1]).to eq %w()
-      expect(subject.words[2]).to eq %w(ABCD)
+      expect(subject.words['Alice']).to eq %w()
+      expect(subject.words['Bob']).to eq %w(ABCD)
       expect(subject.visible_letters).to eq []
     end
   end
@@ -110,21 +110,21 @@ END
   context 'longer game' do
     let(:log) { <<END }
 ABCDEFG
-1+A
-2+B
-3+C
-1:CAB
-1+D
-2+E
-3+G
-2:ABCD
-3:DEABC
+Alice+A
+Bob+B
+Carol+C
+Alice:CAB
+Alice+D
+Bob+E
+Carol+G
+Bob:ABCD
+Carol:DEABC
 END
 
     specify do
-      expect(subject.words[1]).to eq %w()
-      expect(subject.words[2]).to eq %w()
-      expect(subject.words[3]).to eq %w(DEABC)
+      expect(subject.words['Alice']).to eq %w()
+      expect(subject.words['Bob']).to eq %w()
+      expect(subject.words['Carol']).to eq %w(DEABC)
       expect(subject.visible_letters).to eq ['G']
     end
   end
@@ -132,12 +132,12 @@ END
   context 'steal without rearranging' do
     let(:log) { <<END }
 ABCDEFG
-1+A
-2+B
-3+C
-1:CAB
-1+D
-2:CABD
+Alice+A
+Bob+B
+Carol+C
+Alice:CAB
+Alice+D
+Bob:CABD
 END
 
     specify do

@@ -30,7 +30,7 @@ class Game < ApplicationRecord
       end
 
       case line
-      when /^(\d+)\+([A-Z])$/
+      when /^(\w+)\+([A-Z])$/
         i = @hidden_letters.index($2)
         if !i
           raise LogError.new("line #{line_number}: invalid flip #{$2}; " +
@@ -39,10 +39,11 @@ class Game < ApplicationRecord
 
         @hidden_letters.delete_at(i)
         @visible_letters.push($2)
-      when /^(\d+):([A-Z]+)$/
+      when /^(\w+):([A-Z]+)$/
         steal_word($2, line_number)
-        @words[$1.to_i] ||= []
-        @words[$1.to_i].push($2)
+        player = $1
+        @words[player] ||= []
+        @words[player].push($2)
       end
     end
 

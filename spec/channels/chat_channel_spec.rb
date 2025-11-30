@@ -66,4 +66,24 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
       END
     )
   end
+
+  it 'allows nicknames with underscores and digits' do
+    subscribe room: room
+    expect {
+      perform :say, message: '/nick Alice_123'
+    }.to have_broadcasted_to(room).with('Someone set nickname to Alice_123')
+    expect {
+      perform :say, message: 'Howdy'
+    }.to have_broadcasted_to(room).with('Alice_123 said: Howdy')
+  end
+
+  it 'ignores nicknames containing spaces' do
+    subscribe room: room
+    expect {
+      perform :say, message: '/nick New Name'
+    }.to have_broadcasted_to(room).with('Someone said: /nick New Name')
+    expect {
+      perform :say, message: 'Hello again'
+    }.to have_broadcasted_to(room).with('Someone said: Hello again')
+  end
 end
