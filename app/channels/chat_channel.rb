@@ -1,14 +1,27 @@
 class ChatChannel < ApplicationCable::Channel
   WORD_REGEX = /\A[A-Za-z]+\z/.freeze
   NICKNAME_REGEX = /\A[A-Za-z0-9]+\z/.freeze
+  MOTD = 'Welcome to Anagrams! Type /help for help.'.freeze
+  HELP_TEXT = <<~HELP.chomp.freeze
+    Available commands:
+    /nick NEWNAME - change your nickname (do this first!)
+    /flip - flip a new letter
+    /help - show this help
+
+    Commands can be abbreviated like /n, /f, etc.
+
+    Type a word to attempt to make/steal that word. Anything
+    else will just be spoken in the chat.
+  HELP
 
   def subscribed
     stream_from params[:room]
-    broadcast "#{nickname} connected", include_status_update: true
+    broadcast "#{nickname} connected."
+    send_motd
   end
 
   def unsubscribed
-    broadcast "#{nickname} disconnected"
+    broadcast "#{nickname} disconnected."
   end
 
   def say(data)
@@ -25,7 +38,7 @@ class ChatChannel < ApplicationCable::Channel
     if stripped_message.match?(WORD_REGEX) && game
       word = stripped_message.upcase
       if game.try_steal(nickname, word)
-        broadcast "#{nickname} made #{word}", include_status_update: true
+        broadcast "#{nickname} made #{word}.", include_status_update: true
         return
       end
     end
@@ -72,11 +85,11 @@ class ChatChannel < ApplicationCable::Channel
     case command.downcase
     when '/nick', '/n'
       handle_nick_command(args)
-    when '/look', '/l'
-      handle_look_command
     when '/flip', '/f'
       require_nick &&
         handle_flip_command
+    when '/help', '/h'
+      handle_help_command
     else
       transmit_error("Unknown command: #{command}")
     end
@@ -85,20 +98,20 @@ class ChatChannel < ApplicationCable::Channel
   def handle_nick_command(argument)
     desired_nickname = argument.to_s.strip
     if desired_nickname.match?(NICKNAME_REGEX)
-      broadcast "#{nickname} set nickname to #{desired_nickname}"
+      broadcast "#{nickname} set nickname to #{desired_nickname}."
       connection.nickname = desired_nickname
     else
       transmit_error("Invalid nickname: #{desired_nickname}")
     end
   end
 
-  def handle_look_command
-    connection.transmit identifier: @identifier, message: { status: look_state }
+  def handle_help_command
+    connection.transmit identifier: @identifier, message: { chat: HELP_TEXT }
   end
 
   def handle_flip_command
     letter = game.flip(nickname)
-    broadcast "#{nickname} flipped #{letter}", include_status_update: true
+    broadcast "#{nickname} flipped #{letter}.", include_status_update: true
   end
 
   def transmit_error(message)
@@ -107,7 +120,7 @@ class ChatChannel < ApplicationCable::Channel
 
   def require_nick
     if nickname_unset?
-      connection.transmit identifier: @identifier, message: { chat: 'First please set a nickname with /nick' }
+      connection.transmit identifier: @identifier, message: { chat: 'First please set a nickname with /nick.' }
       false
     else
       true
@@ -116,5 +129,9 @@ class ChatChannel < ApplicationCable::Channel
 
   def nickname_unset?
     self.nickname == 'Someone'
+  end
+
+  def send_motd
+    connection.transmit identifier: @identifier, message: { chat: MOTD, status: look_state }
   end
 end
