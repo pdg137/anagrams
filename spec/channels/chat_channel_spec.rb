@@ -67,24 +67,60 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
     )
   end
 
-  it 'allows nicknames with underscores and digits' do
+  it 'allows nicknames with digits' do
     subscribe room: room
     expect {
-      perform :say, message: '/nick Alice_123'
-    }.to have_broadcasted_to(room).with('Someone set nickname to Alice_123')
+      perform :say, message: '/nick Alice123'
+    }.to have_broadcasted_to(room).with('Someone set nickname to Alice123')
     expect {
       perform :say, message: 'Howdy'
-    }.to have_broadcasted_to(room).with('Alice_123 said: Howdy')
+    }.to have_broadcasted_to(room).with('Alice123 said: Howdy')
   end
 
-  it 'ignores nicknames containing spaces' do
+  it 'rejects nicknames containing underscores' do
     subscribe room: room
+    allow(subscription.connection).to receive(:transmit)
+
+    expect {
+      perform :say, message: '/nick Alice_123'
+    }.not_to have_broadcasted_to(room)
+
+    expect(subscription.connection).to have_received(:transmit).with(
+      identifier: subscription.instance_variable_get(:@identifier),
+      message: "Invalid nickname: Alice_123\n"
+    )
+  end
+
+  it 'rejects nicknames containing spaces' do
+    subscribe room: room
+    allow(subscription.connection).to receive(:transmit)
+
     expect {
       perform :say, message: '/nick New Name'
-    }.to have_broadcasted_to(room).with('Someone said: /nick New Name')
+    }.not_to have_broadcasted_to(room)
+
+    expect(subscription.connection).to have_received(:transmit).with(
+      identifier: subscription.instance_variable_get(:@identifier),
+      message: "Invalid nickname: New Name\n"
+    )
+
     expect {
       perform :say, message: 'Hello again'
     }.to have_broadcasted_to(room).with('Someone said: Hello again')
+  end
+
+  it 'gives an error for unknown commands' do
+    subscribe room: room
+    allow(subscription.connection).to receive(:transmit)
+
+    expect {
+      perform :say, message: '/dance party'
+    }.not_to have_broadcasted_to(room)
+
+    expect(subscription.connection).to have_received(:transmit).with(
+      identifier: subscription.instance_variable_get(:@identifier),
+      message: "Unknown command: /dance party\n"
+    )
   end
 
   it 'flips a letter with /flip' do
