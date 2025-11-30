@@ -48,7 +48,7 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
 
   it 'shows the current board state for /look' do
     allow(game).to receive(:visible_letters).and_return(%w[H I J])
-    allow(game).to receive(:words).and_return({ 1 => ['HOUSE', 'RIVER'], 2 => ['CLOUD'], 3 => [] })
+    allow(game).to receive(:words).and_return({ 'Alice' => ['HOUSE', 'RIVER'], 'Bob' => ['CLOUD'], 'Charlie' => [] })
     allow(Game).to receive(:find_by).and_call_original
     allow(Game).to receive(:find_by).with(id: game.id).and_return(game)
 
@@ -61,8 +61,8 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
       identifier: subscription.instance_variable_get(:@identifier),
       message: <<~END
         Visible letters: H I J
-        Player 1: HOUSE RIVER
-        Player 2: CLOUD
+        Alice: HOUSE RIVER
+        Bob: CLOUD
       END
     )
   end

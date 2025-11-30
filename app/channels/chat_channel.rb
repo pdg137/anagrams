@@ -39,10 +39,9 @@ class ChatChannel < ApplicationCable::Channel
                      'Visible letters: (none)'
                    end
 
-    words_by_player = (game.words || {}).sort_by { |player, _| player.to_i }
-    word_lines = words_by_player.filter_map do |player, player_words|
+    word_lines = game.words.filter_map do |player, player_words|
       next if player_words.empty?
-      "Player #{player}: #{player_words.join(' ')}"
+      "#{player}: #{player_words.join(' ')}"
     end
     word_lines = ['No words have been played yet.'] if word_lines.empty?
 
