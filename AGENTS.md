@@ -15,6 +15,7 @@ Philosophy:
 - do not add defensive conditional code, especially when untested
 - comment only unusual parts; better to make the code itself descriptive
 - refactor often
+- test visible behavior of site, NOT hidden HTML attributes
 
 Structure:
 
