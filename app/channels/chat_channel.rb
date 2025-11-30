@@ -4,7 +4,7 @@ class ChatChannel < ApplicationCable::Channel
 
   def subscribed
     stream_from params[:room]
-    broadcast "#{nickname} connected"
+    broadcast "#{nickname} connected", include_status_update: true
   end
 
   def unsubscribed
@@ -23,7 +23,7 @@ class ChatChannel < ApplicationCable::Channel
     if stripped_message.match?(WORD_REGEX) && game
       word = stripped_message.upcase
       if game.try_steal(nickname, word)
-        broadcast "#{nickname} made #{word}"
+        broadcast "#{nickname} made #{word}", include_status_update: true
         return
       end
     end
@@ -31,8 +31,10 @@ class ChatChannel < ApplicationCable::Channel
     broadcast "#{nickname} said: #{stripped_message}"
   end
 
-  def broadcast(line)
-    ActionCable.server.broadcast(params[:room], { chat: line, status: look_state })
+  def broadcast(line, include_status_update: false)
+    message = { chat: line }
+    message[:status] = look_state if include_status_update
+    ActionCable.server.broadcast(params[:room], message)
   end
 
   private
@@ -62,30 +64,18 @@ class ChatChannel < ApplicationCable::Channel
     Game.find_by(id: $1.to_i)
   end
 
-  def handle_command(command_line)
-    body = command_line[1..]
-    command_name, args = body.to_s.split(/\s+/, 2)
+  def handle_command(line)
+    command, args = line.to_s.split(/\s+/, 2)
 
-    case normalize_command(command_name)
-    when :nick
+    case command.downcase
+    when '/nick', '/n'
       handle_nick_command(args)
-    when :look
+    when '/look', '/l'
       handle_look_command
-    when :flip
+    when '/flip', '/f'
       handle_flip_command
     else
-      transmit_error("Unknown command: #{command_line}")
-    end
-  end
-
-  def normalize_command(name)
-    case name.downcase
-    when 'nick', 'n'
-      :nick
-    when 'look', 'l'
-      :look
-    when 'flip', 'f'
-      :flip
+      transmit_error("Unknown command: #{command}")
     end
   end
 
@@ -105,7 +95,7 @@ class ChatChannel < ApplicationCable::Channel
 
   def handle_flip_command
     letter = game.flip(nickname)
-    broadcast "#{nickname} flipped #{letter}"
+    broadcast "#{nickname} flipped #{letter}", include_status_update: true
   end
 
   def transmit_error(message)

@@ -5,7 +5,6 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
 
   let(:websocket) { instance_double(ActionCable::Connection::WebSocket, transmit: nil) }
   let(:game) { Game.create!(log: 'ABCD') }
-  let(:default_status) { "Visible letters: (none)\nNo words have been played yet." }
 
   before do
     connect
@@ -19,7 +18,7 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
   it 'streams from the room and broadcasts a connect message' do
     expect {
       subscribe room: room
-    }.to have_broadcasted_to(room).with(chat: 'Someone connected', status: default_status)
+    }.to have_broadcasted_to(room).with(chat: 'Someone connected', status: "Visible letters: (none)\nNo words have been played yet.")
     expect(subscription).to have_stream_from(room)
   end
 
@@ -27,24 +26,24 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
     subscribe room: room
     expect {
       unsubscribe
-    }.to have_broadcasted_to(room).with(chat: 'Someone disconnected', status: default_status)
+    }.to have_broadcasted_to(room).with(chat: 'Someone disconnected')
   end
 
   it 'broadcasts messages with the default nickname' do
     subscribe room: room
     expect {
       perform :say, message: 'Hello everyone'
-    }.to have_broadcasted_to(room).with(chat: 'Someone said: Hello everyone', status: default_status)
+    }.to have_broadcasted_to(room).with(chat: 'Someone said: Hello everyone')
   end
 
   it 'changes nickname with /nick and uses it for subsequent messages' do
     subscribe room: room
     expect {
       perform :say, message: '/nick Alice'
-    }.to have_broadcasted_to(room).with(chat: 'Someone set nickname to Alice', status: default_status)
+    }.to have_broadcasted_to(room).with(chat: 'Someone set nickname to Alice')
     expect {
       perform :say, message: 'Hi there'
-    }.to have_broadcasted_to(room).with(chat: 'Alice said: Hi there', status: default_status)
+    }.to have_broadcasted_to(room).with(chat: 'Alice said: Hi there')
   end
 
   it 'shows the current board state for /look' do
@@ -74,10 +73,10 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
     subscribe room: room
     expect {
       perform :say, message: '/nick Alice123'
-    }.to have_broadcasted_to(room).with(chat: 'Someone set nickname to Alice123', status: default_status)
+    }.to have_broadcasted_to(room).with(chat: 'Someone set nickname to Alice123')
     expect {
       perform :say, message: 'Howdy'
-    }.to have_broadcasted_to(room).with(chat: 'Alice123 said: Howdy', status: default_status)
+    }.to have_broadcasted_to(room).with(chat: 'Alice123 said: Howdy')
   end
 
   it 'rejects nicknames containing underscores' do
@@ -109,7 +108,7 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
 
     expect {
       perform :say, message: 'Hello again'
-    }.to have_broadcasted_to(room).with(chat: 'Someone said: Hello again', status: default_status)
+    }.to have_broadcasted_to(room).with(chat: 'Someone said: Hello again')
   end
 
   it 'gives an error for unknown commands' do
@@ -122,7 +121,7 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
 
     expect(subscription.connection).to have_received(:transmit).with(
       identifier: subscription.instance_variable_get(:@identifier),
-      message: { chat: 'Unknown command: /dance party' }
+      message: { chat: 'Unknown command: /dance' }
     )
   end
 
