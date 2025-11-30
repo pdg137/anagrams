@@ -27,6 +27,24 @@ class Game < ApplicationRecord
     letter
   end
 
+  def try_steal(player, word)
+    word = word.to_s.strip.upcase
+    raise LogError.new('word must contain letters') if word.empty?
+    raise LogError.new('word must contain only letters A-Z') unless word.match?(/\A[A-Z]+\z/)
+
+    begin
+      log_update
+      steal_word(word, log.lines.count + 1)
+
+      self.log += "\n" unless log.empty?
+      self.log += "#{player}:#{word}"
+      save!
+      return true
+    rescue LogError
+      return false
+    end
+  end
+
   def log_update
     return if log == @last_log
 

@@ -1,4 +1,6 @@
 class ChatChannel < ApplicationCable::Channel
+  WORD_REGEX = /\A[A-Za-z]+\z/.freeze
+
   def subscribed
     stream_from params[:room]
     broadcast "#{nickname} connected"
@@ -9,7 +11,8 @@ class ChatChannel < ApplicationCable::Channel
   end
 
   def say(data)
-    message = data['message'].to_s
+    message = data['message'].to_s.strip
+
     if (match = message.match(%r{\A/nick\s+(\w+)\z}))
       new_nickname = match[1]
       broadcast "#{nickname} set nickname to #{new_nickname}"
@@ -17,15 +20,23 @@ class ChatChannel < ApplicationCable::Channel
       return
     end
 
-    if message.strip == '/look'
+    if message == '/look'
       connection.transmit identifier: @identifier, message: look_state
       return
     end
 
-    if message.strip == '/flip'
+    if message == '/flip'
       letter = game.flip(nickname)
       broadcast "#{nickname} flipped #{letter}"
       return
+    end
+
+    if message.match?(WORD_REGEX) && game
+      word = message.upcase
+      if game.try_steal(nickname, word)
+        broadcast "#{nickname} made #{word}"
+        return
+      end
     end
 
     broadcast "#{nickname} said: #{message}"
