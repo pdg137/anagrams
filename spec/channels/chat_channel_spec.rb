@@ -18,7 +18,7 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
   it 'streams from the room and broadcasts a connect message' do
     expect {
       subscribe room: room
-    }.to have_broadcasted_to(room).with('Someone connected')
+    }.to have_broadcasted_to(room).with(chat: 'Someone connected')
     expect(subscription).to have_stream_from(room)
   end
 
@@ -26,24 +26,24 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
     subscribe room: room
     expect {
       unsubscribe
-    }.to have_broadcasted_to(room).with('Someone disconnected')
+    }.to have_broadcasted_to(room).with(chat: 'Someone disconnected')
   end
 
   it 'broadcasts messages with the default nickname' do
     subscribe room: room
     expect {
       perform :say, message: 'Hello everyone'
-    }.to have_broadcasted_to(room).with('Someone said: Hello everyone')
+    }.to have_broadcasted_to(room).with(chat: 'Someone said: Hello everyone')
   end
 
   it 'changes nickname with /nick and uses it for subsequent messages' do
     subscribe room: room
     expect {
       perform :say, message: '/nick Alice'
-    }.to have_broadcasted_to(room).with('Someone set nickname to Alice')
+    }.to have_broadcasted_to(room).with(chat: 'Someone set nickname to Alice')
     expect {
       perform :say, message: 'Hi there'
-    }.to have_broadcasted_to(room).with('Alice said: Hi there')
+    }.to have_broadcasted_to(room).with(chat: 'Alice said: Hi there')
   end
 
   it 'shows the current board state for /look' do
@@ -59,11 +59,13 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
 
     expect(subscription.connection).to have_received(:transmit).with(
       identifier: subscription.instance_variable_get(:@identifier),
-      message: <<~END
-        Visible letters: H I J
-        Alice: HOUSE RIVER
-        Bob: CLOUD
-      END
+      message: {
+        status: <<~END.chomp
+          Visible letters: H I J
+          Alice: HOUSE RIVER
+          Bob: CLOUD
+        END
+      }
     )
   end
 
@@ -71,10 +73,10 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
     subscribe room: room
     expect {
       perform :say, message: '/nick Alice123'
-    }.to have_broadcasted_to(room).with('Someone set nickname to Alice123')
+    }.to have_broadcasted_to(room).with(chat: 'Someone set nickname to Alice123')
     expect {
       perform :say, message: 'Howdy'
-    }.to have_broadcasted_to(room).with('Alice123 said: Howdy')
+    }.to have_broadcasted_to(room).with(chat: 'Alice123 said: Howdy')
   end
 
   it 'rejects nicknames containing underscores' do
@@ -87,7 +89,7 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
 
     expect(subscription.connection).to have_received(:transmit).with(
       identifier: subscription.instance_variable_get(:@identifier),
-      message: "Invalid nickname: Alice_123\n"
+      message: { chat: 'Invalid nickname: Alice_123' }
     )
   end
 
@@ -101,12 +103,12 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
 
     expect(subscription.connection).to have_received(:transmit).with(
       identifier: subscription.instance_variable_get(:@identifier),
-      message: "Invalid nickname: New Name\n"
+      message: { chat: 'Invalid nickname: New Name' }
     )
 
     expect {
       perform :say, message: 'Hello again'
-    }.to have_broadcasted_to(room).with('Someone said: Hello again')
+    }.to have_broadcasted_to(room).with(chat: 'Someone said: Hello again')
   end
 
   it 'gives an error for unknown commands' do
@@ -119,7 +121,7 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
 
     expect(subscription.connection).to have_received(:transmit).with(
       identifier: subscription.instance_variable_get(:@identifier),
-      message: "Unknown command: /dance party\n"
+      message: { chat: 'Unknown command: /dance party' }
     )
   end
 
@@ -135,6 +137,6 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
 
     expect {
       perform :say, message: '/flip'
-    }.to have_broadcasted_to(room).with('Someone flipped Z')
+    }.to have_broadcasted_to(room).with(chat: 'Someone flipped Z')
   end
 end

@@ -32,7 +32,7 @@ class ChatChannel < ApplicationCable::Channel
   end
 
   def broadcast(line)
-    ActionCable.server.broadcast(params[:room], line)
+    ActionCable.server.broadcast(params[:room], { chat: line })
   end
 
   private
@@ -50,7 +50,7 @@ class ChatChannel < ApplicationCable::Channel
     end
     word_lines = ['No words have been played yet.'] if word_lines.empty?
 
-    ([visible_line] + word_lines).join("\n") + "\n"
+    ([visible_line] + word_lines).join("\n")
   end
 
   def game
@@ -100,7 +100,7 @@ class ChatChannel < ApplicationCable::Channel
   end
 
   def handle_look_command
-    connection.transmit identifier: @identifier, message: look_state
+    connection.transmit identifier: @identifier, message: { status: look_state }
   end
 
   def handle_flip_command
@@ -109,6 +109,6 @@ class ChatChannel < ApplicationCable::Channel
   end
 
   def transmit_error(message)
-    connection.transmit identifier: @identifier, message: "#{message}\n"
+    connection.transmit identifier: @identifier, message: { chat: message }
   end
 end
