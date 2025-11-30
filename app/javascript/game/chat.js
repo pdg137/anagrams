@@ -2,6 +2,8 @@ import * as Channels from "channels"
 
 const room = $("#chat").data("room")
 const chat_channel = new Channels.ChatChannel(room)
+const chatOutput = $("#chat_output")
+const statusOutput = $("#status_output")
 
 function normalizeMessage(data) {
     if (typeof data === "object" && data !== null) {
@@ -15,14 +17,23 @@ function normalizeMessage(data) {
 
 function appendToChatBox(text) {
     if (text) {
-        $("#chat_output").append(text + "\r\n")
+        const currentValue = chatOutput.val() || ""
+        chatOutput.val(currentValue + text + "\r\n")
+        chatOutput.scrollTop(chatOutput[0].scrollHeight)
+    }
+}
+
+function updateStatusBox(text) {
+    if (text) {
+        statusOutput.val(text)
+        statusOutput.scrollTop(statusOutput[0].scrollHeight)
     }
 }
 
 chat_channel.setListener(function(data) {
     const message = normalizeMessage(data)
     appendToChatBox(message.chat)
-    appendToChatBox(message.status)
+    updateStatusBox(message.status)
 })
 
 function say_click() {

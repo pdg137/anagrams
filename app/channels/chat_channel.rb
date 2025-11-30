@@ -32,7 +32,7 @@ class ChatChannel < ApplicationCable::Channel
   end
 
   def broadcast(line)
-    ActionCable.server.broadcast(params[:room], { chat: line })
+    ActionCable.server.broadcast(params[:room], { chat: line, status: look_state })
   end
 
   private

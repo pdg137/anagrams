@@ -10,9 +10,12 @@
 </div>
 
 <div id="chat" data-room="game-<%= @game.id %>">
-<textarea id="chat_output" style="width: 500px; height: 200px;"></textarea><br>
-<input type="text" id="chat_input" style="width: 400px;">
-<button id="chat_say">Say</button>
+  <label for="status_output">Game Status</label><br>
+  <textarea id="status_output" style="width: 500px; height: 200px;" readonly></textarea><br>
+  <label for="chat_output">Chat</label><br>
+  <textarea id="chat_output" style="width: 500px; height: 200px;" readonly></textarea><br>
+  <input type="text" id="chat_input" style="width: 400px;">
+  <button id="chat_say">Say</button>
 </div>
 
 <% content_for :head do %>
