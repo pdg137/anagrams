@@ -3,7 +3,7 @@ module ApplicationCable
     identified_by :nickname
 
     def connect
-      self.nickname = "Someone"
+      self.nickname = 'Someone'
     end
   end
 end

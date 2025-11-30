@@ -20,6 +20,8 @@ class ChatChannel < ApplicationCable::Channel
       return
     end
 
+    return if !require_nick
+
     if stripped_message.match?(WORD_REGEX) && game
       word = stripped_message.upcase
       if game.try_steal(nickname, word)
@@ -73,7 +75,8 @@ class ChatChannel < ApplicationCable::Channel
     when '/look', '/l'
       handle_look_command
     when '/flip', '/f'
-      handle_flip_command
+      require_nick &&
+        handle_flip_command
     else
       transmit_error("Unknown command: #{command}")
     end
@@ -100,5 +103,18 @@ class ChatChannel < ApplicationCable::Channel
 
   def transmit_error(message)
     connection.transmit identifier: @identifier, message: { chat: message }
+  end
+
+  def require_nick
+    if nickname_unset?
+      connection.transmit identifier: @identifier, message: { chat: 'First please set a nickname with /nick' }
+      false
+    else
+      true
+    end
+  end
+
+  def nickname_unset?
+    self.nickname == 'Someone'
   end
 end

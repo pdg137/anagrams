@@ -29,11 +29,13 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
     }.to have_broadcasted_to(room).with(chat: 'Someone disconnected')
   end
 
-  it 'broadcasts messages with the default nickname' do
+  it 'broadcasts messages' do
     subscribe room: room
+    allow(subscription.connection).to receive(:nickname) { 'Angela' }
+
     expect {
       perform :say, message: 'Hello everyone'
-    }.to have_broadcasted_to(room).with(chat: 'Someone said: Hello everyone')
+    }.to have_broadcasted_to(room).with(chat: 'Angela said: Hello everyone')
   end
 
   it 'changes nickname with /nick and uses it for subsequent messages' do
@@ -70,9 +72,18 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
 
   it 'allows nicknames with digits' do
     subscribe room: room
+    allow(subscription.connection).to receive(:transmit)
+
+    perform :say, message: 'Howdy'
+    expect(subscription.connection).to have_received(:transmit).with(
+      identifier: subscription.instance_variable_get(:@identifier),
+      message: { chat: 'First please set a nickname with /nick' }
+    )
+
     expect {
       perform :say, message: '/nick Alice123'
     }.to have_broadcasted_to(room).with(chat: 'Someone set nickname to Alice123')
+
     expect {
       perform :say, message: 'Howdy'
     }.to have_broadcasted_to(room).with(chat: 'Alice123 said: Howdy')
@@ -105,9 +116,12 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
       message: { chat: 'Invalid nickname: New Name' }
     )
 
-    expect {
-      perform :say, message: 'Hello again'
-    }.to have_broadcasted_to(room).with(chat: 'Someone said: Hello again')
+    perform :say, message: 'Hello again'
+
+    expect(subscription.connection).to have_received(:transmit).with(
+      identifier: subscription.instance_variable_get(:@identifier),
+      message: { chat: 'First please set a nickname with /nick' }
+    )
   end
 
   it 'gives an error for unknown commands' do
@@ -125,35 +139,37 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
   end
 
   it 'flips a letter with /flip' do
-    allow(game).to receive(:flip).with('Someone').and_return('Z')
+    allow(game).to receive(:flip).with('Angela').and_return('Z')
     allow(game).to receive(:visible_letters).and_return(%w[Z])
     allow(game).to receive(:words).and_return({})
     allow(Game).to receive(:find_by).with(id: game.id).and_return(game)
 
     subscribe room: room
+    allow(subscription.connection).to receive(:nickname) { 'Angela' }
     allow(subscription.connection).to receive(:transmit)
 
     expect {
       perform :say, message: '/flip'
     }.to have_broadcasted_to(room).with(
-      chat: 'Someone flipped Z',
+      chat: 'Angela flipped Z',
       status: "Visible letters: Z\nNo words have been played yet."
     )
   end
 
   it 'includes a status update when a player forms a word' do
     allow(Game).to receive(:find_by).with(id: game.id).and_return(game)
-    allow(game).to receive(:try_steal).with('Someone', 'CAT').and_return(true)
+    allow(game).to receive(:try_steal).with('Angela', 'CAT').and_return(true)
     allow(game).to receive(:visible_letters).and_return(%w[R])
-    allow(game).to receive(:words).and_return({ 'Someone' => ['CAT'] })
+    allow(game).to receive(:words).and_return({ 'Angela' => ['CAT'] })
 
     subscribe room: room
+    allow(subscription.connection).to receive(:nickname) { 'Angela' }
 
     expect {
       perform :say, message: 'cat'
     }.to have_broadcasted_to(room).with(
-      chat: 'Someone made CAT',
-      status: "Visible letters: R\nSomeone: CAT"
+      chat: 'Angela made CAT',
+      status: "Visible letters: R\nAngela: CAT"
     )
   end
 end
