@@ -13,16 +13,15 @@ require 'rails_helper'
 # sticking to rails and rspec-rails APIs to keep things simple and stable.
 
 RSpec.describe "/games", type: :request do
-  
   # This should return the minimal set of attributes required to create a valid
   # Game. As you add validations to Game, be sure to
   # adjust the attributes here as well.
   let(:valid_attributes) {
-    { }
+    { log: 'ABCD' }
   }
 
   let(:invalid_attributes) {
-    { name: "hello" }
+    { log: '' }
   }
 
   describe "GET /index" do
@@ -87,7 +86,7 @@ RSpec.describe "/games", type: :request do
   describe "PATCH /update" do
     context "with valid parameters" do
       let(:new_attributes) {
-        { }
+        { log: 'XYZ' }
       }
 
       it "updates the requested game" do

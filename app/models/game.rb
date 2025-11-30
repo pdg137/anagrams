@@ -1,4 +1,6 @@
 class Game < ApplicationRecord
+  validates :log, presence: true
+
   def hidden_letters
     log_update
     @hidden_letters
@@ -12,6 +14,18 @@ class Game < ApplicationRecord
   def words
     log_update
     @words
+  end
+
+  def flip(player)
+    letters = hidden_letters
+    raise LogError.new('no hidden letters remain') if letters.empty?
+
+    letter = letters.sample
+    command = "#{player}+#{letter}"
+    self.log += "\n" unless log.empty?
+    self.log += command
+    save!
+    command
   end
 
   def log_update

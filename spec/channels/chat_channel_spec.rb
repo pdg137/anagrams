@@ -4,7 +4,7 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
   self._connection_class = ApplicationCable::Connection
 
   let(:websocket) { instance_double(ActionCable::Connection::WebSocket, transmit: nil) }
-  let(:game) { Game.create!(log: "") }
+  let(:game) { Game.create!(log: 'ABCD') }
 
   before do
     connect
@@ -85,5 +85,25 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
     expect {
       perform :say, message: 'Hello again'
     }.to have_broadcasted_to(room).with('Someone said: Hello again')
+  end
+
+  it 'flips a letter with /flip' do
+    allow(game).to receive(:flip).with('Someone').and_return('Someone+Z')
+    allow(game).to receive(:visible_letters).and_return(%w[Z])
+    allow(game).to receive(:words).and_return({})
+    allow(Game).to receive(:find_by).and_call_original
+    allow(Game).to receive(:find_by).with(id: game.id).and_return(game)
+
+    subscribe room: room
+    allow(subscription.connection).to receive(:transmit)
+
+    expect {
+      perform :say, message: '/flip'
+    }.to have_broadcasted_to(room).with('Someone flipped Z')
+
+    expect(subscription.connection).to have_received(:transmit).with(
+      identifier: subscription.instance_variable_get(:@identifier),
+      message: a_string_including('Visible letters: Z')
+    )
   end
 end

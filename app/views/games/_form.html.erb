@@ -12,6 +12,11 @@
   <% end %>
 
   <div>
+    <%= form.label :log, 'Log' %><br>
+    <%= form.text_area :log, rows: 10, cols: 60 %>
+  </div>
+
+  <div>
     <%= form.submit %>
   </div>
 <% end %>

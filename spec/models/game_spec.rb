@@ -145,4 +145,23 @@ END
     end
   end
 
+  describe '#flip' do
+    let(:game) { Game.new(log: "ABCD") }
+
+    it 'appends a flip command and reveals a hidden letter' do
+      result = game.flip('Alice')
+      expect(result).to match(/^Alice\+[A-Z]$/)
+      expect(game.log.split("\n").last).to eq(result)
+
+      flipped_letter = result.split('+').last
+      expect(game.visible_letters).to include(flipped_letter)
+      expect(game.hidden_letters).not_to include(flipped_letter)
+    end
+
+    it 'raises when no hidden letters remain' do
+      empty_game = Game.new(log: "ABCD\nAlice+A\nAlice+B\nAlice+C\nAlice+D")
+      expect { empty_game.flip('Alice') }.to raise_error(LogError, /no hidden letters/i)
+    end
+  end
+
 end

@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe "games/edit", type: :view do
   let(:game) {
-    Game.create!()
+    Game.create!(log: 'ABCD')
   }
 
   before(:each) do

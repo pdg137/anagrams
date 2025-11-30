@@ -3,8 +3,8 @@ require 'rails_helper'
 RSpec.describe "games/index", type: :view do
   before(:each) do
     assign(:games, [
-      Game.create!(),
-      Game.create!()
+      Game.create!(log: 'ABCD'),
+      Game.create!(log: 'ABCDE')
     ])
   end
 
