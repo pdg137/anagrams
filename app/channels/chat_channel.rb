@@ -23,7 +23,8 @@ class ChatChannel < ApplicationCable::Channel
     end
 
     if message.strip == '/flip'
-      connection.transmit identifier: @identifier, message: flip_response
+      letter = game.flip(nickname)
+      broadcast "#{nickname} flipped #{letter}"
       return
     end
 
@@ -37,8 +38,6 @@ class ChatChannel < ApplicationCable::Channel
   private
 
   def look_state
-    return 'Unable to determine board state for this room.' unless game
-
     visible_line = if game.visible_letters.present?
                      "Visible letters: #{game.visible_letters.join(' ')}"
                    else
@@ -52,18 +51,6 @@ class ChatChannel < ApplicationCable::Channel
     word_lines = ['No words have been played yet.'] if word_lines.empty?
 
     ([visible_line] + word_lines).join("\n") + "\n"
-  end
-
-  def flip_response
-    return 'Unable to determine board state for this room.' unless game
-
-    begin
-      command = game.flip(nickname)
-      broadcast "#{nickname} flipped #{command.split('+').last}"
-      look_state
-    rescue LogError => e
-      e.message
-    end
   end
 
   def game

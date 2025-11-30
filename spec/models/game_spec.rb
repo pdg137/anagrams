@@ -150,8 +150,8 @@ END
 
     it 'appends a flip command and reveals a hidden letter' do
       result = game.flip('Alice')
-      expect(result).to match(/^Alice\+[A-Z]$/)
-      expect(game.log.split("\n").last).to eq(result)
+      expect(result).to match(/^[A-D]$/)
+      expect(game.log.split("\n").last).to eq("Alice+#{result}")
 
       flipped_letter = result.split('+').last
       expect(game.visible_letters).to include(flipped_letter)

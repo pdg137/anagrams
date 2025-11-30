@@ -88,7 +88,7 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
   end
 
   it 'flips a letter with /flip' do
-    allow(game).to receive(:flip).with('Someone').and_return('Someone+Z')
+    allow(game).to receive(:flip).with('Someone').and_return('Z')
     allow(game).to receive(:visible_letters).and_return(%w[Z])
     allow(game).to receive(:words).and_return({})
     allow(Game).to receive(:find_by).and_call_original
@@ -100,10 +100,5 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
     expect {
       perform :say, message: '/flip'
     }.to have_broadcasted_to(room).with('Someone flipped Z')
-
-    expect(subscription.connection).to have_received(:transmit).with(
-      identifier: subscription.instance_variable_get(:@identifier),
-      message: a_string_including('Visible letters: Z')
-    )
   end
 end

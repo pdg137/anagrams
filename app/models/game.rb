@@ -21,11 +21,10 @@ class Game < ApplicationRecord
     raise LogError.new('no hidden letters remain') if letters.empty?
 
     letter = letters.sample
-    command = "#{player}+#{letter}"
     self.log += "\n" unless log.empty?
-    self.log += command
+    self.log += "#{player}+#{letter}"
     save!
-    command
+    letter
   end
 
   def log_update
