@@ -1,4 +1,5 @@
 require 'rails_helper'
+require 'dictionary'
 
 describe ChatChannel, type: :channel, connection: ApplicationCable::Connection do
   self._connection_class = ApplicationCable::Connection
@@ -68,6 +69,39 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
     expect(subscription.connection).to have_received(:transmit).with(
       identifier: subscription.instance_variable_get(:@identifier),
       message: { chat: ChatChannel::HELP_TEXT }
+    )
+  end
+
+  it 'looks up words in the dictionary with /dict' do
+    subscribe room: room
+    allow(subscription.connection).to receive(:transmit)
+    allow(Dictionary).to receive(:check).with('CAT').and_return(true)
+
+    perform :say, message: '/dict cat'
+
+    expect(Dictionary).to have_received(:check).with('CAT')
+    expect(subscription.connection).to have_received(:transmit).with(
+      identifier: subscription.instance_variable_get(:@identifier),
+      message: { chat: 'CAT is in the dictionary.' }
+    )
+  end
+
+  it 'tells the user when /dict is missing or not found' do
+    subscribe room: room
+    allow(subscription.connection).to receive(:transmit)
+    allow(Dictionary).to receive(:check).and_return(false)
+
+    perform :say, message: '/dict '
+    perform :say, message: '/dict dog'
+
+    expect(subscription.connection).to have_received(:transmit).with(
+      identifier: subscription.instance_variable_get(:@identifier),
+      message: { chat: 'Usage: /dict WORD' }
+    )
+
+    expect(subscription.connection).to have_received(:transmit).with(
+      identifier: subscription.instance_variable_get(:@identifier),
+      message: { chat: 'DOG is not in the dictionary.' }
     )
   end
 

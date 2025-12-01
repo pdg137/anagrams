@@ -44,6 +44,7 @@ class Game < ApplicationRecord
   def try_steal(word)
     normalized_word = normalize_word(word)
     return false unless normalized_word
+    return false unless normalized_word.length >= 4
     return false unless Dictionary.check(normalized_word)
 
     log_update

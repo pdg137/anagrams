@@ -1,3 +1,5 @@
+require 'dictionary'
+
 class ChatChannel < ApplicationCable::Channel
   WORD_REGEX = /\A[A-Za-z]+\z/.freeze
   NICKNAME_REGEX = /\A[A-Za-z0-9]+\z/.freeze
@@ -7,6 +9,7 @@ class ChatChannel < ApplicationCable::Channel
     /nick NEWNAME - change your nickname (do this first!)
     /flip - flip a new letter
     /help - show this help
+    /dict WORD - check if WORD is in the dictionary
 
     Commands can be abbreviated like /n, /f, etc.
 
@@ -90,6 +93,8 @@ class ChatChannel < ApplicationCable::Channel
         handle_flip_command
     when '/help', '/h'
       handle_help_command
+    when '/dict', '/d'
+      handle_dict_command(args)
     else
       transmit_error("Unknown command: #{command}")
     end
@@ -107,6 +112,19 @@ class ChatChannel < ApplicationCable::Channel
 
   def handle_help_command
     connection.transmit identifier: @identifier, message: { chat: HELP_TEXT }
+  end
+
+  def handle_dict_command(argument)
+    word = argument.to_s.strip.upcase
+    message =
+      if word.empty?
+        'Usage: /dict WORD'
+      elsif Dictionary.check(word)
+        "#{word} is in the dictionary."
+      else
+        "#{word} is not in the dictionary."
+      end
+    connection.transmit identifier: @identifier, message: { chat: message }
   end
 
   def handle_flip_command

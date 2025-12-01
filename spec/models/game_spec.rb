@@ -172,19 +172,20 @@ end
         ABCDE
         Alice+A
         Bob+B
-        Carol+C
+        Carol+D
+        Alice+E
       LOG
     end
     let(:dictionary) { class_double('Dictionary').as_stubbed_const }
 
     before do
       allow(dictionary).to receive(:check).and_return(false)
-      allow(dictionary).to receive(:check).with('CAB').and_return(true)
+      allow(dictionary).to receive(:check).with('BEAD').and_return(true)
     end
 
     it 'returns false when the dictionary rejects the word' do
-      allow(dictionary).to receive(:check).with('CAB').and_return(false)
-      expect(game.try_steal('CAB')).to be(false)
+      allow(dictionary).to receive(:check).with('BEAD').and_return(false)
+      expect(game.try_steal('BEAD')).to be(false)
     end
 
     it 'returns false when the word cannot be formed' do
@@ -197,11 +198,16 @@ end
       expect(game.try_steal('   ')).to be(false)
     end
 
+    it 'returns false for short words without hitting the dictionary' do
+      expect(dictionary).not_to receive(:check)
+      expect(game.try_steal('ABS')).to be(false)
+    end
+
     it 'returns true without mutating state when the word can be formed' do
-      game.visible_letters
+      allow(dictionary).to receive(:check).with('BEAD').and_return(true)
       original_visible = game.visible_letters.dup
 
-      expect(game.try_steal('CAB')).to be(true)
+      expect(game.try_steal('BEAD')).to be(true)
       expect(game.visible_letters).to eq(original_visible)
     end
   end
