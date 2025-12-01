@@ -5,14 +5,17 @@ const chat_channel = new Channels.ChatChannel(room)
 const chatOutput = $("#chat_output")
 const statusOutput = $("#status_output")
 
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 365 // 1 year
+
 function normalizeMessage(data) {
     if (typeof data === "object" && data !== null) {
         return {
             chat: data.chat || "",
-            status: data.status || ""
+            status: data.status || "",
+            cookie: data.cookie || null
         }
     }
-    return { chat: data || "", status: "" }
+    return { chat: data || "", status: "", cookie: null }
 }
 
 function appendToChatBox(text) {
@@ -30,20 +33,32 @@ function updateStatusBox(text) {
     }
 }
 
+function setCookie(name, value) {
+    if (!name || value === undefined || value === null) {
+        return
+    }
+    document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${COOKIE_MAX_AGE}`
+}
+
 chat_channel.setListener(function(data) {
     const message = normalizeMessage(data)
     appendToChatBox(message.chat)
     updateStatusBox(message.status)
+    if (message.cookie) {
+        setCookie(message.cookie.name, message.cookie.value)
+    }
 })
 
 function say_click() {
-    if(!chat_channel.say($("#chat_input").val()))
+    const input = $("#chat_input")
+    const message = input.val()
+    if(!chat_channel.say(message))
     {
         alert("failed to send message")
         return
     }
-    $("#chat_input").val("")
-    $("#chat_input").focus()
+    input.val("")
+    input.focus()
 }
 
 $("#chat_say").click(say_click)

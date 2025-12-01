@@ -2,11 +2,11 @@ require 'rails_helper'
 
 feature 'basic chat', type: :feature, js: true do
   def expect_chat_history_to_include(text)
-    expect(page).to have_field('chat_output', with: /#{Regexp.escape(text)}/, wait: 5)
+    expect(page).to have_field('chat_output', with: /#{Regexp.escape(text)}/)
   end
 
   def expect_status_to_include(text)
-    expect(page).to have_field('status_output', with: /#{Regexp.escape(text)}/, wait: 5)
+    expect(page).to have_field('status_output', with: /#{Regexp.escape(text)}/)
   end
 
   it 'allows changing nickname and sending chat messages' do
@@ -29,5 +29,21 @@ feature 'basic chat', type: :feature, js: true do
     click_button 'Say'
     expect_chat_history_to_include('Alice said: Hi there')
     expect_status_to_include('Visible letters: (none)')
+  end
+
+  it 'remembers nickname across disconnections' do
+    visit new_game_path
+    click_button 'Create Game'
+
+    fill_in 'chat_input', with: '/nick Bob'
+    click_button 'Say'
+    expect_chat_history_to_include('Someone set nickname to Bob')
+
+    # Simulate disconnect by refreshing the page (new websocket connection, same cookie)
+    visit current_path
+
+    fill_in 'chat_input', with: 'Hello again'
+    click_button 'Say'
+    expect_chat_history_to_include('Bob said: Hello again')
   end
 end

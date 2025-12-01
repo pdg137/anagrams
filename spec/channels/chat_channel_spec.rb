@@ -52,9 +52,19 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
 
   it 'changes nickname with /nick and uses it for subsequent messages' do
     subscribe room: room
+    allow(subscription.connection).to receive(:transmit)
     expect {
       perform :say, message: '/nick Alice'
     }.to have_broadcasted_to(room).with(chat: 'Someone set nickname to Alice.')
+    expect(subscription.connection).to have_received(:transmit).with(
+      identifier: subscription.instance_variable_get(:@identifier),
+      message: {
+        cookie: {
+          name: ApplicationCable::Connection::NICKNAME_COOKIE,
+          value: 'Alice'
+        }
+      }
+    )
     expect {
       perform :say, message: 'Hi there'
     }.to have_broadcasted_to(room).with(chat: 'Alice said: Hi there')

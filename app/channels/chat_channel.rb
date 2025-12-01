@@ -105,6 +105,7 @@ class ChatChannel < ApplicationCable::Channel
     if desired_nickname.match?(NICKNAME_REGEX)
       broadcast "#{nickname} set nickname to #{desired_nickname}."
       connection.nickname = desired_nickname
+      transmit_cookie(ApplicationCable::Connection::NICKNAME_COOKIE, desired_nickname)
     else
       transmit_error("Invalid nickname: #{desired_nickname}")
     end
@@ -134,6 +135,10 @@ class ChatChannel < ApplicationCable::Channel
 
   def transmit_error(message)
     connection.transmit identifier: @identifier, message: { chat: message }
+  end
+
+  def transmit_cookie(name, value)
+    connection.transmit identifier: @identifier, message: { cookie: { name: name, value: value } }
   end
 
   def require_nick
