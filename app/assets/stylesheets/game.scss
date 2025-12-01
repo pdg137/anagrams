@@ -1,0 +1,22 @@
+.game {
+    max-width: 100% !important;
+    margin-top: 1em;
+    padding-right: 0.5em;
+    padding-left: 0.5em;
+
+    textarea {
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    input {
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+}
+
+body {
+    background-color: #d5c6b9;
+    margin: 0;
+    padding: 0;
+}
