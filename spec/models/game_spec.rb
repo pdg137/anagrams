@@ -165,3 +165,70 @@ END
   end
 
 end
+  describe '#try_steal' do
+    subject(:game) { Game.create!(log: log) }
+    let(:log) do
+      <<~LOG
+        ABCDE
+        Alice+A
+        Bob+B
+        Carol+C
+      LOG
+    end
+    let(:dictionary) { class_double('Dictionary').as_stubbed_const }
+
+    before do
+      allow(dictionary).to receive(:check).and_return(false)
+      allow(dictionary).to receive(:check).with('CAB').and_return(true)
+    end
+
+    it 'returns false when the dictionary rejects the word' do
+      allow(dictionary).to receive(:check).with('CAB').and_return(false)
+      expect(game.try_steal('CAB')).to be(false)
+    end
+
+    it 'returns false when the word cannot be formed' do
+      allow(dictionary).to receive(:check).with('ABCD').and_return(true)
+      expect(game.try_steal('ABCD')).to be(false)
+    end
+
+    it 'returns false for blank input without hitting the dictionary' do
+      expect(dictionary).not_to receive(:check)
+      expect(game.try_steal('   ')).to be(false)
+    end
+
+    it 'returns true without mutating state when the word can be formed' do
+      game.visible_letters
+      original_visible = game.visible_letters.dup
+
+      expect(game.try_steal('CAB')).to be(true)
+      expect(game.visible_letters).to eq(original_visible)
+    end
+  end
+
+  describe '#play_word' do
+    subject(:game) { Game.create!(log: log) }
+    let(:log) do
+      <<~LOG
+        ABCDE
+        Alice+A
+        Bob+B
+        Carol+C
+      LOG
+    end
+
+    it 'returns false when the word cannot be formed' do
+      expect(game.play_word('Alice', 'ABCD')).to be(false)
+    end
+
+    it 'appends the word to the log when successful' do
+      game.visible_letters
+      expect {
+        game.play_word('Alice', 'CAB')
+      }.to change {
+        game.reload.log.lines.reject { |line| line.strip.empty? }.size
+      }.by(1)
+
+      expect(game.log).to include("Alice:CAB")
+    end
+  end

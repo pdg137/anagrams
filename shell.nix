@@ -11,6 +11,15 @@ let
 
   pkgs = import nixpkgs {};
 
+  # 2025-11-30 version
+  speedily-dictionary-src = fetchTarball {
+    name = "speedily-dictionary";
+    url = "https://github.com/pdg137/speedily-dictionary/archive/3ad714e.tar.gz";
+    sha256 = "1za9vj91fixsa781qvh1wkfnjc4yasbraqxl7a0d1dxnwxvks6ni";
+  };
+
+  speedily-dictionary = import speedily-dictionary-src;
+
   gemset = import ./build_gemset.nix pkgs {
     # If you update Gemfile.lock, you will need to revise this hash.
     hash = "sha256-+aAFCXtwutb+AdRVNdR8nwjFHrqwTtAen492l3IWpA0=";
@@ -46,13 +55,15 @@ in
     # prevent nixpkgs from being garbage-collected
     inherit nixpkgs;
 
+    DICTIONARY = "${speedily-dictionary}/dictionary.txt";
+
     builder = builtins.toFile "builder.sh" ''
       source $stdenv/setup
       eval $shellHook
 
       {
         echo "#!$SHELL"
-        for var in PATH SHELL nixpkgs
+        for var in PATH SHELL nixpkgs DICTIONARY
         do echo "declare -x $var=\"''${!var}\""
         done
         echo "declare -x PS1='\n\033[1;32m[nix-shell:\w]\$\033[0m '"

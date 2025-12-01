@@ -37,7 +37,7 @@ class ChatChannel < ApplicationCable::Channel
 
     if stripped_message.match?(WORD_REGEX) && game
       word = stripped_message.upcase
-      if game.try_steal(nickname, word)
+      if game.try_steal(word) && game.play_word(nickname, word)
         broadcast "#{nickname} made #{word}.", include_status_update: true
         return
       end

@@ -1,3 +1,5 @@
+require 'dictionary'
+
 class Game < ApplicationRecord
   validates :log, presence: true
 
@@ -27,21 +29,35 @@ class Game < ApplicationRecord
     letter
   end
 
-  def try_steal(player, word)
-    word = word.to_s.strip.upcase
-    raise LogError.new('word must contain letters') if word.empty?
-    raise LogError.new('word must contain only letters A-Z') unless word.match?(/\A[A-Z]+\z/)
+  def play_word(player, word)
+    normalized_word = normalize_word!(word)
 
-    begin
-      log_update
-      steal_word(word, log.lines.count + 1)
+    log_update
+    steal_word(normalized_word, log.lines.count + 1)
+    append_word_to_log(player, normalized_word)
+    save!
+    true
+  rescue LogError
+    false
+  end
 
-      self.log += "\n" unless log.empty?
-      self.log += "#{player}:#{word}"
-      save!
-      return true
-    rescue LogError
-      return false
+  def try_steal(word)
+    normalized_word = normalize_word(word)
+    return false unless normalized_word
+    return false unless Dictionary.check(normalized_word)
+
+    log_update
+    visible_backup = @visible_letters.dup
+    words_backup = duplicate_words(@words)
+
+    steal_word(normalized_word, log.lines.count + 1)
+    true
+  rescue LogError
+    false
+  ensure
+    if defined?(visible_backup) && visible_backup
+      @visible_letters = visible_backup
+      @words = words_backup
     end
   end
 
@@ -107,6 +123,33 @@ class Game < ApplicationRecord
     larger.map { |l, c| [l, c - smaller[l].to_i] }
       .reject { |a| a[1] == 0 }
       .to_h
+  end
+
+  private
+
+  def append_word_to_log(player, word)
+    self.log += "\n" unless log.empty?
+    self.log += "#{player}:#{word}"
+  end
+
+  def normalize_word(word)
+    normalized = word.to_s.strip.upcase
+    return nil if normalized.empty?
+    return nil unless normalized.match?(/\A[A-Z]+\z/)
+    normalized
+  end
+
+  def normalize_word!(word)
+    normalized = word.to_s.strip.upcase
+    raise LogError.new('word must contain letters') if normalized.empty?
+    raise LogError.new('word must contain only letters A-Z') unless normalized.match?(/\A[A-Z]+\z/)
+    normalized
+  end
+
+  def duplicate_words(words)
+    words.each_with_object({}) do |(player, player_words), copy|
+      copy[player] = player_words.dup
+    end
   end
 
   def steal_word(word, line_number)

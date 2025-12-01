@@ -159,7 +159,8 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
 
   it 'includes a status update when a player forms a word' do
     allow(Game).to receive(:find_by).with(id: game.id).and_return(game)
-    allow(game).to receive(:try_steal).with('Angela', 'CAT').and_return(true)
+    allow(game).to receive(:try_steal).with('CAT').and_return(true)
+    allow(game).to receive(:play_word).with('Angela', 'CAT').and_return(true)
     allow(game).to receive(:visible_letters).and_return(%w[R])
     allow(game).to receive(:words).and_return({ 'Angela' => ['CAT'] })
 
