@@ -4,6 +4,7 @@ const room = $("#chat").data("room")
 const chat_channel = new Channels.ChatChannel(room)
 const chatOutput = $("#chat_output")
 const statusOutput = $("#status_output")
+const visibleLetters = $("#visible_letters")
 
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365 // 1 year
 
@@ -27,9 +28,40 @@ function appendToChatBox(text) {
 }
 
 function updateStatusBox(text) {
-    if (text) {
-        statusOutput.val(text)
-        statusOutput.scrollTop(statusOutput[0].scrollHeight)
+    if (typeof text !== "string" || text.length === 0) {
+        return
+    }
+
+    statusOutput.val(text)
+    statusOutput.scrollTop(statusOutput[0].scrollHeight)
+    renderVisibleLetters(text)
+}
+
+function renderVisibleLetters(statusText) {
+    if (!visibleLetters.length) {
+        return
+    }
+
+    const firstLine = statusText.split("\n")[0] || ""
+    const match = firstLine.match(/^Visible letters:\s*(.*)$/i)
+    visibleLetters.empty()
+
+    if (!match || match[1] === "" || match[1] === "(none)") {
+        visibleLetters.text("None")
+        return
+    }
+
+    match[1].trim().split(/\s+/).forEach((letter) => {
+        if (letter) {
+            visibleLetters.append($("<span/>", {
+                class: "visible-letter",
+                text: letter
+            }))
+        }
+    })
+
+    if (visibleLetters.children().length === 0) {
+        visibleLetters.text("None")
     }
 }
 

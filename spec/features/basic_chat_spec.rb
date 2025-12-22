@@ -46,4 +46,18 @@ feature 'basic chat', type: :feature, js: true do
     click_button 'Say'
     expect_chat_history_to_include('Bob said: Hello again')
   end
+
+  it 'displays visible letters as spans' do
+    visit new_game_path
+    click_button 'Create Game'
+    expect(page).to have_css('#visible_letters', text: 'None', wait: 5)
+
+    fill_in 'chat_input', with: '/nick Carol'
+    click_button 'Say'
+
+    fill_in 'chat_input', with: '/flip'
+    click_button 'Say'
+
+    expect(page).to have_css('#visible_letters .visible-letter', wait: 5)
+  end
 end
