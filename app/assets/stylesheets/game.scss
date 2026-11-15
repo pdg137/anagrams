@@ -14,6 +14,10 @@
         box-sizing: border-box;
     }
 
+    textarea[hidden] {
+        display: none;
+    }
+
     input {
         max-width: 100% !important;
         box-sizing: border-box;
@@ -64,4 +68,10 @@ span.letter {
     background-color: #dfd09a;
     font-size: 20px;
     font-family: sans-serif;
+}
+
+button#status_toggle {
+  padding: 0;
+  border: 0;
+  background: transparent;
 }

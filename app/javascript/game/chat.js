@@ -121,6 +121,13 @@ $("#chat_dict").click(() => send_input("/dict"))
 $("#chat_flip").click(() => send_message("/flip"))
 $("#chat_nick").click(() => send_input("/nick"))
 $("#chat_help").click(() => send_message("/help"))
+$("#status_toggle").click(function () {
+    statusOutput.prop("hidden", !statusOutput.prop("hidden"))
+    const expanded = !statusOutput.prop("hidden")
+    $(this).text(expanded ? "▼" : "▶")
+        .attr("aria-expanded", expanded)
+        .attr("aria-label", expanded ? "Hide game status" : "Show game status")
+})
 $("#chat_input").keypress(function (e) {
     if (e.which == 13) {
         send_input()
