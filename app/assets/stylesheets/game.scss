@@ -10,7 +10,6 @@
 
     textarea {
         display: block;
-        max-width: 100% !important;
         box-sizing: border-box;
     }
 
@@ -19,8 +18,35 @@
     }
 
     input {
-        max-width: 100% !important;
         box-sizing: border-box;
+    }
+
+    input#chat_input {
+      width: 60%;
+      min-width: 200px;
+      max-width: 360px;
+    }
+
+    textarea, input, button {
+      font-size: 16px;
+      font-family: sans-serif;
+      line-height: 1.4em;
+    }
+
+    font-size: 16px;
+    font-family: sans-serif;
+    line-height: 1.4em;
+
+    textarea#chat_output {
+      width: 100%;
+      max-width: 600px;
+      height: 250px;
+    }
+
+    textarea#hidden_letters_output {
+      width: 100%;
+      max-width: 600px;
+      height: 100px;
     }
 }
 
