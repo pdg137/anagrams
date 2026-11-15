@@ -29,7 +29,7 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
       identifier: subscription.instance_variable_get(:@identifier),
       message: {
         chat: ChatChannel::MOTD,
-        status: "Visible letters: (none)\nNo words have been played yet."
+        status: "Visible letters: (none)\nHidden letters: A B C D\nNo words have been played yet."
       }
     )
   end
@@ -186,6 +186,7 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
   it 'flips a letter with /flip' do
     allow(game).to receive(:flip).with('Angela').and_return('Z')
     allow(game).to receive(:visible_letters).and_return(%w[Z])
+    allow(game).to receive(:hidden_letters).and_return(%w[A B C D])
     allow(game).to receive(:words).and_return({})
     allow(Game).to receive(:find_by).with(id: game.id).and_return(game)
 
@@ -197,7 +198,7 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
       perform :say, message: '/flip'
     }.to have_broadcasted_to(room).with(
       chat: 'Angela flipped Z.',
-      status: "Visible letters: Z\nNo words have been played yet."
+      status: "Visible letters: Z\nHidden letters: A B C D\nNo words have been played yet."
     )
   end
 
@@ -206,6 +207,7 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
     allow(game).to receive(:try_steal).with('CAT').and_return(true)
     allow(game).to receive(:play_word).with('Angela', 'CAT').and_return(true)
     allow(game).to receive(:visible_letters).and_return(%w[R])
+    allow(game).to receive(:hidden_letters).and_return(%w[A B])
     allow(game).to receive(:words).and_return({ 'Angela' => ['CAT'] })
 
     subscribe room: room
@@ -215,7 +217,7 @@ describe ChatChannel, type: :channel, connection: ApplicationCable::Connection d
       perform :say, message: 'cat'
     }.to have_broadcasted_to(room).with(
       chat: 'Angela made CAT.',
-      status: "Visible letters: R\nAngela: CAT"
+      status: "Visible letters: R\nHidden letters: A B\nAngela: CAT"
     )
   end
 end

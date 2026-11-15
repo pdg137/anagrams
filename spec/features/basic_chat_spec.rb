@@ -57,7 +57,64 @@ feature 'basic chat', type: :feature, js: true do
 
     click_button 'Flip'
 
-    expect(page).to have_css('#visible_letters .visible-letter', wait: 5)
+    expect(page).to have_css('#visible_letters .letter', wait: 5)
+  end
+
+  it 'shows formed words for each player when they join or play' do
+    game = Game.create!(log: <<~LOG)
+      APPLECATSBANANA
+      Alice+A
+      Alice+P
+      Alice+P
+      Alice+L
+      Alice+E
+      Alice:APPLE
+      Alice+C
+      Alice+A
+      Alice+T
+      Alice+S
+      Alice:CATS
+      Bob+B
+      Bob+A
+      Bob+N
+      Bob+A
+      Bob+N
+      Bob+A
+    LOG
+    visit game_path(game)
+
+    within '.formed-words' do
+      expect(page).to have_css('h3', text: 'Alice')
+      expect(page).to have_css('.formed-word', text: 'APPLE')
+      expect(page).to have_css('.formed-word', text: 'CATS')
+      expect(page).to have_css('.formed-word .letter', count: 9)
+    end
+
+    fill_in 'chat_input', with: 'Bob'
+    click_button 'Nick'
+    fill_in 'chat_input', with: 'BANANA'
+    click_button 'Say'
+
+    within '.formed-words' do
+      expect(page).to have_css('h3', text: 'Bob')
+      expect(page).to have_css('.formed-word', text: 'BANANA')
+      expect(page).to have_css('.formed-word .letter', count: 15)
+    end
+  end
+
+  it 'shows remaining hidden letters in the game status' do
+    game = Game.create!(log: 'A')
+    visit game_path(game)
+
+    expect_status_to_include('Hidden letters: A')
+
+    fill_in 'chat_input', with: 'Carol'
+    click_button 'Nick'
+    expect_chat_history_to_include('Someone set nickname to Carol.')
+    click_button 'Flip'
+
+    expect_status_to_include('Visible letters: A')
+    expect_status_to_include('Hidden letters: (none)')
   end
 
   it 'shows help without clearing a draft message' do

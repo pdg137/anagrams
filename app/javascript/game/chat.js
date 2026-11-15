@@ -5,6 +5,7 @@ const chat_channel = new Channels.ChatChannel(room)
 const chatOutput = $("#chat_output")
 const statusOutput = $("#status_output")
 const visibleLetters = $("#visible_letters")
+const formedWords = $(".formed-words")
 
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365 // 1 year
 
@@ -35,6 +36,7 @@ function updateStatusBox(text) {
     statusOutput.val(text)
     statusOutput.scrollTop(statusOutput[0].scrollHeight)
     renderVisibleLetters(text)
+    renderFormedWords(text)
 }
 
 function renderVisibleLetters(statusText) {
@@ -54,7 +56,7 @@ function renderVisibleLetters(statusText) {
     match[1].trim().split(/\s+/).forEach((letter) => {
         if (letter) {
             visibleLetters.append($("<span/>", {
-                class: "visible-letter",
+                class: "letter",
                 text: letter
             }))
         }
@@ -63,6 +65,23 @@ function renderVisibleLetters(statusText) {
     if (visibleLetters.children().length === 0) {
         visibleLetters.text("None")
     }
+}
+
+function renderFormedWords(statusText) {
+    formedWords.empty()
+
+    statusText.split("\n").slice(2).filter(line => line.includes(": ")).forEach(line => {
+        const [player, words] = line.split(": ")
+        formedWords.append($("<h3/>").text(player))
+
+        words.split(" ").forEach(word => {
+            const formedWord = $("<span/>", { class: "formed-word" })
+            word.split("").forEach(letter => {
+                formedWord.append($("<span/>", { class: "letter", text: letter }))
+            })
+            formedWords.append(formedWord, " ")
+        })
+    })
 }
 
 function setCookie(name, value) {

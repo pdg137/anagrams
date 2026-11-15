@@ -63,6 +63,11 @@ class ChatChannel < ApplicationCable::Channel
                    else
                      'Visible letters: (none)'
                    end
+    hidden_line = if game.hidden_letters.present?
+                    "Hidden letters: #{game.hidden_letters.join(' ')}"
+                  else
+                    'Hidden letters: (none)'
+                  end
 
     word_lines = game.words.filter_map do |player, player_words|
       next if player_words.empty?
@@ -70,7 +75,7 @@ class ChatChannel < ApplicationCable::Channel
     end
     word_lines = ['No words have been played yet.'] if word_lines.empty?
 
-    ([visible_line] + word_lines).join("\n")
+    ([visible_line, hidden_line] + word_lines).join("\n")
   end
 
   def game

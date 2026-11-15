@@ -10,21 +10,22 @@
 </div>
 
 <div class="game">
-  <label for="status_output">Game Status</label><br>
-  <textarea id="status_output" style="width: 500px; height: 200px;" readonly></textarea><br>
-  <div id="visible_letters" class="visible-letters">None</div><br>
+  <h3>Game status</h3>
+  <textarea id="status_output" style="width: 500px; height: 200px;" readonly></textarea>
+  <h3>Visible letters</h3>
+  <div id="visible_letters" class="visible-letters">None</div>
+  <div class="formed-words"></div>
 
-<div id="chat" data-room="game-<%= @game.id %>">
-  <label for="chat_output">Chat</label><br>
-  <textarea id="chat_output" style="width: 500px; height: 200px;" readonly></textarea><br>
-  <input type="text" id="chat_input" style="width: 280px;">
-  <button type="button" id="chat_say">Say</button>
-  <button type="button" id="chat_dict">Dict</button>
-  <button type="button" id="chat_flip">Flip</button>
-  <button type="button" id="chat_nick">Nick</button>
-  <button type="button" id="chat_help">Help</button>
-</div>
-
+  <div id="chat" data-room="game-<%= @game.id %>">
+    <h3>Chat</h3>
+    <textarea id="chat_output" style="width: 500px; height: 200px;" readonly></textarea>
+    <input type="text" id="chat_input" style="width: 280px;">
+    <button type="button" id="chat_say">Say</button>
+    <button type="button" id="chat_dict">Dict</button>
+    <button type="button" id="chat_flip">Flip</button>
+    <button type="button" id="chat_nick">Nick</button>
+    <button type="button" id="chat_help">Help</button>
+  </div>
 </div>
 
 <% content_for :head do %>
