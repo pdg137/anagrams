@@ -1,15 +1,6 @@
 let
-  # Change to this if you want to use your configured channel
-  #  nixpkgs = <nixpkgs>;
-
-  # nixos-25.11 from 2025-11-30:
-  nixpkgs = fetchTarball {
-    name = "nixpkgs";
-    url = "https://github.com/NixOS/nixpkgs/archive/d542db7.tar.gz";
-    sha256 = "0x6wjmpzxrrlmwwq8v3znpyr1qs5m1vf9bdgwwlq0lr5fl8l4v67";
-  };
-
-  pkgs = import nixpkgs {};
+  mynix = import ./defs.nix;
+  pkgs = mynix.pkgs;
 
   # 2025-11-30 version
   speedily-dictionary-src = fetchTarball {
@@ -22,14 +13,14 @@ let
 
   gemset = import ./build_gemset.nix pkgs {
     # If you update Gemfile.lock, you will need to revise this hash.
-    hash = "sha256-+aAFCXtwutb+AdRVNdR8nwjFHrqwTtAen492l3IWpA0=";
+    hash = "sha256-Cos6AiUDRyIwVntoI6rkHRkJ/dWipPbBvEVoQNM1yoA=";
     gemfile = ./Gemfile;
     lockfile = ./Gemfile.lock;
   };
 
   our_ruby_env = pkgs.bundlerEnv {
     name = "our_ruby_env";
-    ruby = pkgs.ruby_3_3;
+    ruby = pkgs.ruby;
 
     gemfile = ./Gemfile;
     lockfile = ./Gemfile.lock;
@@ -43,7 +34,7 @@ in
     dontUnpack = "true";
     buildInputs = [
       our_ruby_env
-      pkgs.ruby_3_3
+      pkgs.ruby
       pkgs.chromedriver
       pkgs.chromium
       pkgs.fontconfig
@@ -51,9 +42,6 @@ in
       pkgs.which
       pkgs.codex
     ];
-
-    # prevent nixpkgs from being garbage-collected
-    inherit nixpkgs;
 
     DICTIONARY = "${speedily-dictionary}/dictionary.txt";
 
@@ -72,4 +60,18 @@ in
 
       chmod a+x "$out"
     '';
+  } // {
+    # special environment for JUST the ruby dependency
+    bundler = mynix.mkBuildableShell {
+      name = "bundler";
+      packages = [
+        pkgs.ruby
+      ];
+
+      shellHook = ''
+        echo "This shell is for running bundler to update Gemfile.lock."
+        echo "Ruby version:" `ruby --version`
+        echo "Bundler verison:" `bundler --version`
+      '';
+    };
   }

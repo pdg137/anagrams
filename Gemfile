@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-gem 'rails', '~> 8.0.1'
+gem 'rails', '~> 8.1.0'
 
 # Rails system
 gem 'propshaft'
@@ -33,5 +33,4 @@ gem 'rspec-rails'
 gem 'capybara'
 gem 'capybara-screenshot'
 gem 'selenium-webdriver'
-gem 'webdrivers'
 gem 'timecop'
