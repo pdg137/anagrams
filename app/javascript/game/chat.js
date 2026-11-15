@@ -81,22 +81,30 @@ chat_channel.setListener(function(data) {
     }
 })
 
-function say_click() {
-    const input = $("#chat_input")
-    const message = input.val()
-    if(!chat_channel.say(message))
-    {
+function send_message(message) {
+    if (!chat_channel.say(message)) {
         alert("failed to send message")
-        return
+        return false
     }
+    return true
+}
+
+function send_input(command) {
+    const input = $("#chat_input")
+    const message = command ? `${command} ${input.val()}` : input.val()
+    if (!send_message(message)) return
     input.val("")
     input.focus()
 }
 
-$("#chat_say").click(say_click)
+$("#chat_say").click(() => send_input())
+$("#chat_dict").click(() => send_input("/dict"))
+$("#chat_flip").click(() => send_message("/flip"))
+$("#chat_nick").click(() => send_input("/nick"))
+$("#chat_help").click(() => send_message("/help"))
 $("#chat_input").keypress(function (e) {
     if (e.which == 13) {
-        say_click()
+        send_input()
         return false
     }
 })

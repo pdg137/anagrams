@@ -55,9 +55,38 @@ feature 'basic chat', type: :feature, js: true do
     fill_in 'chat_input', with: '/nick Carol'
     click_button 'Say'
 
-    fill_in 'chat_input', with: '/flip'
-    click_button 'Say'
+    click_button 'Flip'
 
     expect(page).to have_css('#visible_letters .visible-letter', wait: 5)
+  end
+
+  it 'shows help without clearing a draft message' do
+    visit new_game_path
+    click_button 'Create Game'
+
+    within '#chat' do
+      expect(all('button').map(&:text)).to eq(%w[Say Dict Flip Nick Help])
+    end
+
+    fill_in 'chat_input', with: 'draft message'
+    click_button 'Help'
+
+    expect_chat_history_to_include('Available commands:')
+    expect(page).to have_field('chat_input', with: 'draft message')
+  end
+
+  it 'uses the chat input for dictionary lookups and nicknames' do
+    visit new_game_path
+    click_button 'Create Game'
+
+    fill_in 'chat_input', with: 'cat'
+    click_button 'Dict'
+    expect_chat_history_to_include('CAT is in the dictionary.')
+    expect(page).to have_field('chat_input', with: '')
+
+    fill_in 'chat_input', with: 'Alice'
+    click_button 'Nick'
+    expect_chat_history_to_include('Someone set nickname to Alice.')
+    expect(page).to have_field('chat_input', with: '')
   end
 end
