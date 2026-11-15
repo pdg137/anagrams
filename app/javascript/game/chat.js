@@ -3,7 +3,7 @@ import * as Channels from "channels"
 const room = $("#chat").data("room")
 const chat_channel = new Channels.ChatChannel(room)
 const chatOutput = $("#chat_output")
-const statusOutput = $("#status_output")
+const hiddenLettersOutput = $("#hidden_letters_output")
 const visibleLetters = $("#visible_letters")
 const formedWords = $(".formed-words")
 
@@ -28,13 +28,12 @@ function appendToChatBox(text) {
     }
 }
 
-function updateStatusBox(text) {
+function updateGameDisplay(text) {
     if (typeof text !== "string" || text.length === 0) {
         return
     }
 
-    statusOutput.val(text)
-    statusOutput.scrollTop(statusOutput[0].scrollHeight)
+    hiddenLettersOutput.val(text.split("\n")[1].replace("Hidden letters: ", ""))
     renderVisibleLetters(text)
     renderFormedWords(text)
 }
@@ -55,7 +54,7 @@ function renderVisibleLetters(statusText) {
 
     match[1].trim().split(/\s+/).forEach((letter) => {
         if (letter) {
-            visibleLetters.append($("<span/>", {
+            visibleLetters.append($("<i/>", {
                 class: "letter",
                 text: letter
             }))
@@ -77,7 +76,7 @@ function renderFormedWords(statusText) {
         words.split(" ").forEach(word => {
             const formedWord = $("<span/>", { class: "formed-word" })
             word.split("").forEach(letter => {
-                formedWord.append($("<span/>", { class: "letter", text: letter }))
+                formedWord.append($("<i/>", { class: "letter", text: letter }))
             })
             formedWords.append(formedWord, " ")
         })
@@ -94,7 +93,7 @@ function setCookie(name, value) {
 chat_channel.setListener(function(data) {
     const message = normalizeMessage(data)
     appendToChatBox(message.chat)
-    updateStatusBox(message.status)
+    updateGameDisplay(message.status)
     if (message.cookie) {
         setCookie(message.cookie.name, message.cookie.value)
     }
@@ -121,12 +120,12 @@ $("#chat_dict").click(() => send_input("/dict"))
 $("#chat_flip").click(() => send_message("/flip"))
 $("#chat_nick").click(() => send_input("/nick"))
 $("#chat_help").click(() => send_message("/help"))
-$("#status_toggle").click(function () {
-    statusOutput.prop("hidden", !statusOutput.prop("hidden"))
-    const expanded = !statusOutput.prop("hidden")
+$("#hidden_letters_toggle").click(function () {
+    hiddenLettersOutput.prop("hidden", !hiddenLettersOutput.prop("hidden"))
+    const expanded = !hiddenLettersOutput.prop("hidden")
     $(this).text(expanded ? "▼" : "▶")
         .attr("aria-expanded", expanded)
-        .attr("aria-label", expanded ? "Hide game status" : "Show game status")
+        .attr("aria-label", expanded ? "Hide hidden letters" : "Show hidden letters")
 })
 $("#chat_input").keypress(function (e) {
     if (e.which == 13) {

@@ -5,8 +5,8 @@ feature 'basic chat', type: :feature, js: true do
     expect(page).to have_field('chat_output', with: /#{Regexp.escape(text)}/)
   end
 
-  def expect_status_to_include(text)
-    expect(page).to have_field('status_output', with: /#{Regexp.escape(text)}/)
+  def expect_hidden_letters(text)
+    expect(page).to have_field('hidden_letters_output', with: text)
   end
 
   it 'allows changing nickname and sending chat messages' do
@@ -14,22 +14,16 @@ feature 'basic chat', type: :feature, js: true do
     click_button 'Create Game'
 
     expect(page).to have_css('#chat_input', wait: 5)
-    click_button '▶'
-
-    fill_in 'chat_input', with: '/look'
-    click_button 'Say'
-    expect_status_to_include('Visible letters: (none)')
-    expect_status_to_include('No words have been played yet.')
+    expect(page).to have_css('#visible_letters', text: 'None')
 
     fill_in 'chat_input', with: '/nick Alice'
     click_button 'Say'
     expect_chat_history_to_include('Someone set nickname to Alice')
-    expect_status_to_include('Visible letters: (none)')
 
     fill_in 'chat_input', with: 'Hi there'
     click_button 'Say'
     expect_chat_history_to_include('Alice said: Hi there')
-    expect_status_to_include('Visible letters: (none)')
+    expect(page).to have_css('#visible_letters', text: 'None')
   end
 
   it 'remembers nickname across disconnections' do
@@ -103,36 +97,36 @@ feature 'basic chat', type: :feature, js: true do
     end
   end
 
-  it 'shows remaining hidden letters in the game status' do
+  it 'shows only remaining hidden letters in the hidden letters panel' do
     game = Game.create!(log: 'A')
     visit game_path(game)
     click_button '▶'
 
-    expect_status_to_include('Hidden letters: A')
+    expect_hidden_letters('A')
 
     fill_in 'chat_input', with: 'Carol'
     click_button 'Nick'
     expect_chat_history_to_include('Someone set nickname to Carol.')
     click_button 'Flip'
 
-    expect_status_to_include('Visible letters: A')
-    expect_status_to_include('Hidden letters: (none)')
+    expect(page).to have_css('#visible_letters .letter', text: 'A')
+    expect_hidden_letters('(none)')
   end
 
-  it 'collapses and expands the game status while it keeps updating' do
+  it 'collapses and expands hidden letters while they keep updating' do
     game = Game.create!(log: 'A')
     visit game_path(game)
 
-    expect(page).to have_css('#status_output', visible: :hidden)
-    expect(find('#status_toggle').text).to eq('▶')
+    expect(page).to have_css('#hidden_letters_output', visible: :hidden)
+    expect(find('#hidden_letters_toggle').text).to eq('▶')
 
     click_button '▶'
-    expect_status_to_include('Hidden letters: A')
-    expect(find('#status_toggle').text).to eq('▼')
+    expect_hidden_letters('A')
+    expect(find('#hidden_letters_toggle').text).to eq('▼')
 
     click_button '▼'
-    expect(page).to have_css('#status_output', visible: :hidden)
-    expect(find('#status_toggle').text).to eq('▶')
+    expect(page).to have_css('#hidden_letters_output', visible: :hidden)
+    expect(find('#hidden_letters_toggle').text).to eq('▶')
 
     fill_in 'chat_input', with: 'Carol'
     click_button 'Nick'
@@ -140,9 +134,9 @@ feature 'basic chat', type: :feature, js: true do
     click_button 'Flip'
 
     click_button '▶'
-    expect_status_to_include('Visible letters: A')
-    expect_status_to_include('Hidden letters: (none)')
-    expect(find('#status_toggle').text).to eq('▼')
+    expect(page).to have_css('#visible_letters .letter', text: 'A')
+    expect_hidden_letters('(none)')
+    expect(find('#hidden_letters_toggle').text).to eq('▼')
   end
 
   it 'shows help without clearing a draft message' do
