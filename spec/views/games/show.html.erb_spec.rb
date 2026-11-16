@@ -5,8 +5,8 @@ RSpec.describe "games/show", type: :view do
     assign(:game, Game.create!(log: 'ABCD'))
   end
 
-  it "renders the destroy button" do
+  it "renders the edit link" do
     render
-    expect(rendered).to include("Destroy this game")
+    expect(rendered).to include("Edit this game")
   end
 end

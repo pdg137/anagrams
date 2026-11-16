@@ -9,4 +9,6 @@
 <div>
   <%= link_to "Show this game", @game %> |
   <%= link_to "Back to games", games_path %>
+
+  <%= button_to "Destroy this game", @game, method: :delete, data: { turbo_confirm: "Are you sure you want to delete this game?" } %>
 </div>
