@@ -3,6 +3,7 @@ import * as Channels from "channels"
 const room = $("#chat").data("room")
 const chat_channel = new Channels.ChatChannel(room)
 const chatOutput = $("#chat_output")
+const chatInput = $("#chat_input")
 const hiddenLettersOutput = $("#hidden_letters_output")
 const visibleLetters = $("#visible_letters")
 const formedWords = $(".formed-words")
@@ -100,19 +101,16 @@ chat_channel.setListener(function(data) {
 })
 
 function send_message(message) {
-    if (!chat_channel.say(message)) {
-        alert("failed to send message")
-        return false
-    }
-    return true
+    const sent = chat_channel.say(message)
+    if (!sent) alert("failed to send message")
+    chatInput.focus()
+    return sent
 }
 
 function send_input(command) {
-    const input = $("#chat_input")
-    const message = command ? `${command} ${input.val()}` : input.val()
+    const message = command ? `${command} ${chatInput.val()}` : chatInput.val()
     if (!send_message(message)) return
-    input.val("")
-    input.focus()
+    chatInput.val("")
 }
 
 $("#chat_say").click(() => send_input())
@@ -126,12 +124,13 @@ $("#hidden_letters_toggle").click(function () {
     $(this).text(expanded ? "▼" : "▶")
         .attr("aria-expanded", expanded)
         .attr("aria-label", expanded ? "Hide hidden letters" : "Show hidden letters")
+    chatInput.focus()
 })
-$("#chat_input").keypress(function (e) {
+chatInput.keypress(function (e) {
     if (e.which == 13) {
         send_input()
         return false
     }
 })
 
-$("#chat_input").focus()
+chatInput.focus()

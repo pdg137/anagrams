@@ -168,4 +168,35 @@ feature 'basic chat', type: :feature, js: true do
     expect_chat_history_to_include('Someone set nickname to Alice.')
     expect(page).to have_field('chat_input', with: '')
   end
+
+  it 'focuses chat input after every command and disclosure button' do
+    game = Game.create!(log: 'A')
+    visit game_path(game)
+    expect_chat_history_to_include('Welcome to Anagrams!')
+
+    fill_in 'chat_input', with: 'Alice'
+    click_button 'Nick'
+    expect(page).to have_css('#chat_input:focus')
+    expect_chat_history_to_include('Someone set nickname to Alice.')
+
+    fill_in 'chat_input', with: 'cat'
+    click_button 'Dict'
+    expect(page).to have_css('#chat_input:focus')
+
+    fill_in 'chat_input', with: 'hello'
+    click_button 'Say'
+    expect(page).to have_css('#chat_input:focus')
+
+    click_button 'Flip'
+    expect(page).to have_css('#chat_input:focus')
+
+    click_button 'Help'
+    expect(page).to have_css('#chat_input:focus')
+
+    click_button '▶'
+    expect(page).to have_css('#chat_input:focus')
+
+    click_button '▼'
+    expect(page).to have_css('#chat_input:focus')
+  end
 end
